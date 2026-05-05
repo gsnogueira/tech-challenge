@@ -1,0 +1,6 @@
+[
+  { "id": "1", "type": "deposit", "description": "Salary", "amount": 4500.0, "date": "2026-05-01" },
+  { "id": "2", "type": "withdrawal", "description": "Groceries", "amount": -120.5, "date": "2026-05-03" },
+  { "id": "3", "type": "transfer", "description": "Rent", "amount": -1500.0, "date": "2026-05-02" },
+  { "id": "4", "type": "deposit", "description": "Freelance", "amount": 800.0, "date": "2026-04-28" }
+]
