@@ -1,0 +1,29 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Transações</title>
+    <style>
+      body{font-family:Arial,Helvetica,sans-serif;background:#f8fafc;padding:24px}
+      .card{background:#fff;padding:16px;border-radius:8px;box-shadow:0 1px 4px rgba(0,0,0,0.06);max-width:900px;margin:0 auto}
+      .tx{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #eee}
+      .muted{color:#64748b}
+      .positive{color:green}
+      .negative{color:red}
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <h1>Transações</h1>
+      <p class="muted">Lista estática carregada do arquivo público transactions.json</p>
+      <div id="list"></div>
+    </div>
+    <script>
+      fetch('/transactions.json').then(r=>r.json()).then(data=>{
+        const list = document.getElementById('list');
+        list.innerHTML = data.map(tx=>`<div class="tx"><div><div><strong>${tx.description}</strong></div><div class="muted">${tx.date} • ${tx.type}</div></div><div class="${tx.amount<0? 'negative':'positive'}">${new Intl.NumberFormat(undefined,{style:'currency',currency:'USD'}).format(tx.amount)}</div></div>`).join('');
+      });
+    </script>
+  </body>
+</html>
