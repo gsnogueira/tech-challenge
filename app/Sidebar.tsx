@@ -1,12 +1,14 @@
 "use client";
 import Link from 'next/link';
+import { useTx } from './context/TxContext';
 
 export default function Sidebar(){
+  const { openModal } = useTx();
   return (
     <aside className="sidebar" aria-label="Sidebar">
       <div className="logo">
         <div className="logo-icon" aria-hidden>
-          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 12l4-4 8 8" stroke="#072" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="#0d0f14" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 7l10-5 10 5-10 5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
         </div>
         <div>
           <div className="logo-name">Finances</div>
@@ -19,6 +21,7 @@ export default function Sidebar(){
           <div className="nav-label">Principal</div>
           <div className="nav-item active"><Link href="/">Dashboard</Link></div>
           <div className="nav-item"><Link href="/transactions">Transações</Link></div>
+          <div className="nav-item" onClick={() => openModal()} style={{cursor:'pointer'}}>Nova Transação</div>
         </div>
       </nav>
 
