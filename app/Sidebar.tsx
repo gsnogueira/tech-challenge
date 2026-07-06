@@ -21,6 +21,7 @@ export default function Sidebar(){
           <div className="nav-label">Principal</div>
           <div className="nav-item active"><Link href="/">Dashboard</Link></div>
           <div className="nav-item"><Link href="/transactions">Transações</Link></div>
+          <div className="nav-item"><Link href="/analytics">Análises</Link></div>
           <div className="nav-item" onClick={() => openModal()} style={{cursor:'pointer'}}>Nova Transação</div>
         </div>
       </nav>

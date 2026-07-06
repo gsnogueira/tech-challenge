@@ -9,7 +9,7 @@ export default function TransactionsPage() {
   const [filterPeriod, setFilterPeriod] = useState("");
   const [deleting, setDeleting] = useState<string | number | null>(null);
 
-  const filtered = transactions.filter(tx => {
+  const filtered = transactions.filter((tx: { description?: string; desc?: string; note?: string; type: string; date: string; amount: number }) => {
     const matchSearch = search === "" || 
       (tx.description || tx.desc || "").toLowerCase().includes(search.toLowerCase()) ||
       (tx.note || "").toLowerCase().includes(search.toLowerCase());
@@ -26,7 +26,7 @@ export default function TransactionsPage() {
     }
     
     return matchSearch && matchType && matchPeriod;
-  }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  }).sort((a: { date: string }, b: { date: string }) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
   function formatCurrency(val: number) {
     return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val);
@@ -107,7 +107,7 @@ export default function TransactionsPage() {
             </tr>
           </thead>
           <tbody>
-            {filtered.map((tx) => (
+            {filtered.map((tx: { id: string | number; description?: string; desc?: string; note?: string; type: string; date: string; amount: number }) => (
               <tr key={tx.id}>
                 <td className="tx-desc">{tx.description || tx.desc}<small>{tx.note ? tx.note : '—'}</small></td>
                 <td>{getTypeBadge(tx.type)}</td>
