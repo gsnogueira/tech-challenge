@@ -1,8 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { Button } from './Button';
-import { Card } from './Card';
-import { MetricCard } from './MetricCard';
-import { DataTable } from './DataTable';
+import { Button, Card, MetricCard, DataTable } from 'gabri-ui-components';
 
 const meta: Meta = {
   title: 'UI/Overview',

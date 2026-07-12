@@ -1,6 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { Card } from './Card';
-import { Button } from './Button';
+import { Card, Button } from 'gabri-ui-components';
 
 const meta: Meta<typeof Card> = {
   title: 'UI/Card',

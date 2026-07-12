@@ -1,1 +1,1 @@
-export { Button as default } from './ui-components/Button';
+export { Button as default } from 'gabri-ui-components';

@@ -1,7 +1,6 @@
-import { Button } from '../ui-components/Button';
-import { Card } from '../ui-components/Card';
-import { MetricCard } from '../ui-components/MetricCard';
-import { DataTable } from '../ui-components/DataTable';
+"use client";
+
+import { Button, Card, MetricCard, DataTable } from 'gabri-ui-components';
 
 const tableRows = [
   { description: 'Salário', category: 'Receita', amount: '$4.500' },

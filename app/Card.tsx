@@ -1,1 +1,1 @@
-export { Card as default } from './ui-components/Card';
+export { Card as default } from 'gabri-ui-components';

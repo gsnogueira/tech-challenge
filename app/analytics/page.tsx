@@ -1,9 +1,6 @@
 "use client";
 
-import { Button } from '../ui-components/Button';
-import { Card } from '../ui-components/Card';
-import { MetricCard } from '../ui-components/MetricCard';
-import { DataTable } from '../ui-components/DataTable';
+import { Button, Card, MetricCard, DataTable } from 'gabri-ui-components';
 
 const monthlyTrend = [
   { month: 'Jan', inflow: 12, outflow: 8 },
