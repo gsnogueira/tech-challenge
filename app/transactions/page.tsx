@@ -1,58 +1,54 @@
 "use client";
-import React, { useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { filterTransactions } from "../application/transactions/transactionService";
+import { formatCurrency, formatDate, getTransactionBadge, getTransactionLabel } from "../domain/transactions";
 import { useTx } from "../context/TxContext";
+
+const PAGE_SIZE = 8;
 
 export default function TransactionsPage() {
   const { transactions, openModal, deleteTransaction } = useTx();
+  const loadMoreRef = useRef<HTMLDivElement | null>(null);
   const [search, setSearch] = useState("");
   const [filterType, setFilterType] = useState("");
   const [filterPeriod, setFilterPeriod] = useState("");
+  const [page, setPage] = useState(1);
   const [deleting, setDeleting] = useState<string | number | null>(null);
 
-  const filtered = transactions.filter((tx: { description?: string; desc?: string; note?: string; type: string; date: string; amount: number }) => {
-    const matchSearch = search === "" || 
-      (tx.description || tx.desc || "").toLowerCase().includes(search.toLowerCase()) ||
-      (tx.note || "").toLowerCase().includes(search.toLowerCase());
-    
-    const matchType = filterType === "" || tx.type === filterType;
-    
-    let matchPeriod = true;
-    if (filterPeriod) {
-      const txDate = new Date(tx.date);
-      const now = new Date();
-      if (filterPeriod === "month") matchPeriod = txDate.getMonth() === now.getMonth() && txDate.getFullYear() === now.getFullYear();
-      else if (filterPeriod === "3months") matchPeriod = txDate >= new Date(now.getFullYear(), now.getMonth() - 2, 1);
-      else if (filterPeriod === "year") matchPeriod = txDate.getFullYear() === now.getFullYear();
-    }
-    
-    return matchSearch && matchType && matchPeriod;
-  }).sort((a: { date: string }, b: { date: string }) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  useEffect(() => {
+    setPage(1);
+  }, [search, filterType, filterPeriod]);
 
-  function formatCurrency(val: number) {
-    return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val);
-  }
+  const filtered = useMemo(
+    () => filterTransactions(transactions, {
+      search,
+      type: filterType,
+      period: filterPeriod as "month" | "3months" | "year" | undefined,
+    }),
+    [transactions, search, filterType, filterPeriod],
+  );
 
-  function formatDate(date: string) {
-    return new Intl.DateTimeFormat('pt-BR').format(new Date(date + 'T00:00:00'));
-  }
+  const visibleTransactions = useMemo(
+    () => filtered.slice(0, page * PAGE_SIZE),
+    [filtered, page],
+  );
 
-  function getTypeBadge(type: string) {
-    const types: {[key:string]: string} = {
-      'deposit': 'Depósito',
-      'withdraw': 'Saque',
-      'transfer': 'Transferência',
-      'payment': 'Pagamento',
-      'investment': 'Investimento'
-    };
-    const typeCls: {[key:string]: string} = {
-      'deposit': 'badge-deposit',
-      'withdraw': 'badge-withdraw',
-      'transfer': 'badge-transfer',
-      'payment': 'badge-payment',
-      'investment': 'badge-investment'
-    };
-    return <span className={`tx-type-badge ${typeCls[type] || 'badge-deposit'}`}>{types[type] || type}</span>;
-  }
+  const hasMoreTransactions = visibleTransactions.length < filtered.length;
+
+  useEffect(() => {
+    const sentinel = loadMoreRef.current;
+    if (!sentinel || !hasMoreTransactions) return;
+
+    const observer = new IntersectionObserver((entries) => {
+      const firstEntry = entries[0];
+      if (firstEntry?.isIntersecting) {
+        setPage((current) => current + 1);
+      }
+    }, { rootMargin: "160px" });
+
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [hasMoreTransactions]);
 
   return (
     <div className="container py-8">
@@ -62,14 +58,14 @@ export default function TransactionsPage() {
       </div>
 
       <div className="filter-bar">
-        <input 
-          type="text" 
-          placeholder="🔍  Buscar transações..." 
+        <input
+          type="text"
+          placeholder="🔍  Buscar transações..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           style={{ background: 'var(--c-surface)', borderColor: 'var(--c-border)', flex: 1, minWidth: '200px' }}
         />
-        <select 
+        <select
           value={filterType}
           onChange={(e) => setFilterType(e.target.value)}
           className="filter-select"
@@ -82,7 +78,7 @@ export default function TransactionsPage() {
           <option value="payment">Pagamento</option>
           <option value="investment">Investimento</option>
         </select>
-        <select 
+        <select
           value={filterPeriod}
           onChange={(e) => setFilterPeriod(e.target.value)}
           className="filter-select"
@@ -107,10 +103,41 @@ export default function TransactionsPage() {
             </tr>
           </thead>
           <tbody>
-            {filtered.map((tx: { id: string | number; description?: string; desc?: string; note?: string; type: string; date: string; amount: number }) => (
+            {visibleTransactions.map((tx) => (
               <tr key={tx.id}>
-                <td className="tx-desc">{tx.description || tx.desc}<small>{tx.note ? tx.note : '—'}</small></td>
-                <td>{getTypeBadge(tx.type)}</td>
+                <td className="tx-desc">
+                  {tx.description}
+                  <small>{tx.note ? tx.note : '—'}</small>
+                  {tx.attachments?.length ? (
+                    <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginTop: '6px' }}>
+                      {tx.attachments.slice(0, 2).map((attachment, index) => (
+                        <a
+                          key={`${tx.id}-${attachment.name}-${index}`}
+                          href={attachment.dataUrl}
+                          download={attachment.name}
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                            background: 'var(--c-surface)',
+                            border: '1px solid var(--c-border)',
+                            borderRadius: '999px',
+                            padding: '4px 8px',
+                            color: 'var(--c-text)',
+                            fontSize: '11px',
+                            textDecoration: 'none',
+                          }}
+                        >
+                          📎 {attachment.name}
+                        </a>
+                      ))}
+                      {tx.attachments.length > 2 && (
+                        <span style={{ fontSize: '11px', color: 'var(--c-muted)' }}>+{tx.attachments.length - 2} anexos</span>
+                      )}
+                    </div>
+                  ) : null}
+                </td>
+                <td><span className={`tx-type-badge ${getTransactionBadge(tx.type)}`}>{getTransactionLabel(tx.type)}</span></td>
                 <td className="tx-date">{formatDate(tx.date)}</td>
                 <td className={`tx-amount ${tx.amount < 0 ? "negative" : "positive"}`}>
                   {tx.amount < 0 ? '-' : '+'}{formatCurrency(Math.abs(tx.amount))}
@@ -126,6 +153,19 @@ export default function TransactionsPage() {
           </tbody>
         </table>
       </div>
+
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '16px', gap: '12px' }}>
+        <span style={{ color: 'var(--c-muted)', fontSize: '13px' }}>
+          Mostrando {visibleTransactions.length} de {filtered.length} transações
+        </span>
+        {hasMoreTransactions && (
+          <button className="btn btn-ghost" onClick={() => setPage((current) => current + 1)}>
+            Carregar mais
+          </button>
+        )}
+      </div>
+
+      <div ref={loadMoreRef} style={{ height: '1px' }} />
 
       {filtered.length === 0 && (
         <div className="empty-state" style={{ marginTop: '40px' }}>

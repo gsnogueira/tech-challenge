@@ -1,63 +1,93 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { createTransaction, removeTransaction, updateTransactions } from "../application/transactions/transactionService";
+import { type Transaction, type TransactionDraft } from "../domain/transactions";
+import { loadTransactions, persistTransactions } from "../infrastructure/transactions/transactionRepository";
 
-type Tx = { id: string | number; type: string; description?: string; amount: number; date: string; note?: string };
+type TxToast = { msg: string; type: "success" | "error" };
+type TxContextValue = {
+  transactions: Transaction[];
+  addTransaction: (tx: TransactionDraft) => void;
+  updateTransaction: (id: string | number, updates: Partial<Transaction>) => void;
+  deleteTransaction: (id: string | number) => void;
+  isModalOpen: boolean;
+  openModal: (tx?: Transaction | null) => void;
+  closeModal: () => void;
+  editingTx: Transaction | null;
+  setEditingTx: React.Dispatch<React.SetStateAction<Transaction | null>>;
+  toast: TxToast | null;
+};
 
-const TxContext = createContext<any>(null);
+const TxContext = createContext<TxContextValue | null>(null);
 
 export function TxProvider({ children }: { children: React.ReactNode }) {
-  const [transactions, setTransactions] = useState<Tx[]>([]);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingTx, setEditingTx] = useState<Tx | null>(null);
-  const [toast, setToast] = useState<{ msg: string; type: string } | null>(null);
+  const [editingTx, setEditingTx] = useState<Transaction | null>(null);
+  const [toast, setToast] = useState<TxToast | null>(null);
 
   useEffect(() => {
-    const data = localStorage.getItem("tx_data");
-    if (data) {
-      try { setTransactions(JSON.parse(data)); } catch { setTransactions([]); }
-    } else {
-      fetch("/transactions.json").then(r => r.json()).then(d => {
-        const normalized = Array.isArray(d) ? d.map((it:any) => ({ ...it, amount: it.amount ?? it.value ?? 0 })) : [];
-        setTransactions(normalized);
-      }).catch(() => {});
+    async function bootstrap() {
+      const data = await loadTransactions();
+      setTransactions(data);
     }
+    bootstrap();
   }, []);
 
   useEffect(() => {
-    try { localStorage.setItem("tx_data", JSON.stringify(transactions)); } catch {}
+    persistTransactions(transactions);
   }, [transactions]);
 
-  function openModal(tx?: Tx | null) { if (tx) setEditingTx(tx); else setEditingTx(null); setIsModalOpen(true); }
-  function closeModal() { setIsModalOpen(false); setEditingTx(null); }
-
-  function addTransaction(tx: Omit<Tx, "id">) {
-    const id = Date.now();
-    const newTx: Tx = { ...tx, id } as Tx;
-    setTransactions(prev => [newTx, ...prev]);
-    showToast("Transação adicionada", "success");
+  function showToast(msg: string, type: TxToast["type"] = "success") {
+    setToast({ msg, type });
+    window.setTimeout(() => setToast(null), 3000);
   }
 
-  function updateTransaction(id: string | number, updates: Partial<Tx>) {
-    setTransactions(prev => prev.map(t => t.id === id ? { ...t, ...updates } : t));
-    showToast("Transação atualizada", "success");
+  function openModal(tx?: Transaction | null) {
+    setEditingTx(tx ?? null);
+    setIsModalOpen(true);
+  }
+
+  function closeModal() {
+    setIsModalOpen(false);
+    setEditingTx(null);
+  }
+
+  function addTransaction(tx: TransactionDraft) {
+    const newTx = createTransaction(tx);
+    setTransactions((previous) => [newTx, ...previous]);
+    showToast("Transação adicionada");
+  }
+
+  function updateTransaction(id: string | number, updates: Partial<Transaction>) {
+    setTransactions((previous) => updateTransactions(previous, id, updates));
+    showToast("Transação atualizada");
   }
 
   function deleteTransaction(id: string | number) {
-    setTransactions(prev => prev.filter(t => t.id !== id));
-    showToast("Transação excluída", "success");
+    setTransactions((previous) => removeTransaction(previous, id));
+    showToast("Transação excluída");
   }
 
-  function showToast(msg: string, type: string = "success") {
-    setToast({ msg, type });
-    setTimeout(() => setToast(null), 3000);
-  }
+  const value = useMemo<TxContextValue>(() => ({
+    transactions,
+    addTransaction,
+    updateTransaction,
+    deleteTransaction,
+    isModalOpen,
+    openModal,
+    closeModal,
+    editingTx,
+    setEditingTx,
+    toast,
+  }), [transactions, isModalOpen, editingTx, toast]);
 
-  return (
-    <TxContext.Provider value={{ transactions, addTransaction, updateTransaction, deleteTransaction, isModalOpen, openModal, closeModal, editingTx, setEditingTx, toast }}>
-      {children}
-    </TxContext.Provider>
-  );
+  return <TxContext.Provider value={value}>{children}</TxContext.Provider>;
 }
 
-export function useTx() { const ctx = useContext(TxContext); if (!ctx) throw new Error("useTx must be used within TxProvider"); return ctx; }
+export function useTx() {
+  const ctx = useContext(TxContext);
+  if (!ctx) throw new Error("useTx must be used within TxProvider");
+  return ctx;
+}

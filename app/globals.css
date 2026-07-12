@@ -93,6 +93,7 @@ nav { flex: 1; }
   border-left: 3px solid transparent;
   transition: all 0.15s;
   user-select: none;
+  text-decoration: none;
 }
 .nav-item:hover { color: var(--c-text); background: var(--c-surface2); }
 .nav-item.active {
@@ -101,6 +102,20 @@ nav { flex: 1; }
   border-left-color: var(--c-green);
 }
 .nav-item svg { width: 17px; height: 17px; flex-shrink: 0; }
+.nav-item-action {
+  width: calc(100% - 48px);
+  margin: 8px 24px 0;
+  border: 1px solid var(--c-border);
+  border-radius: 12px;
+  background: var(--c-surface2);
+  padding: 10px 14px;
+  font-weight: 600;
+}
+.nav-item-action:hover {
+  background: var(--c-green-dim);
+  color: var(--c-green);
+  border-color: rgba(0, 229, 160, 0.35);
+}
 
 .sidebar-footer {
   padding: 20px 24px 0;
