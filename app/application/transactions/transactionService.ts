@@ -1,4 +1,5 @@
-import { type Transaction, type TransactionDraft, type TransactionFilters, formatCurrency, getBalance, normalizeTransaction } from '../../domain/transactions';
+import { formatCurrency, getBalance, normalizeTransaction } from '../../domain/transactions';
+import type { Transaction, TransactionDraft, TransactionFilters } from '../../interfaces/transactions';
 
 export function createTransaction(draft: TransactionDraft): Transaction {
   return normalizeTransaction(draft);

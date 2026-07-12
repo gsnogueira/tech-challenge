@@ -1,4 +1,5 @@
-import { normalizeTransaction, type Transaction } from '../../domain/transactions';
+import { normalizeTransaction } from '../../domain/transactions';
+import type { Transaction } from '../../interfaces/transactions';
 
 const STORAGE_KEY = 'tx_data';
 

@@ -2,7 +2,8 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import { useTx } from "../context/TxContext";
-import { getTransactionSuggestions, suggestTransactionType, validateTransactionDraft, type TransactionAttachment, type TransactionType } from "../domain/transactions";
+import { getTransactionSuggestions, suggestTransactionType, validateTransactionDraft } from "../domain/transactions";
+import type { TransactionAttachment, TransactionType } from "../interfaces/transactions";
 
 const TRANSACTION_TYPES: TransactionType[] = ["deposit", "withdraw", "transfer", "payment", "investment"];
 

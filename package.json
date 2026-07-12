@@ -6,8 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint",
-    "design-system": "next dev"
+    "lint": "eslint"
   },
   "dependencies": {
     "gabri-ui-components": "^0.1.0",

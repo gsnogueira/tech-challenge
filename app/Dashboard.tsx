@@ -34,7 +34,7 @@ export default function Dashboard() {
         <div className="section-header">
           <div className="section-title">Personalizar widgets</div>
         </div>
-        <div className="ui-row" style={{ gap: '10px' }}>
+        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
           {['summary', 'goals', 'alerts'].map((widget) => (
             <label key={widget} style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '8px 12px', borderRadius: '999px', background: 'var(--c-surface)', border: '1px solid var(--c-border)', cursor: 'pointer' }}>
               <input type="checkbox" checked={selectedWidgets.includes(widget)} onChange={() => toggleWidget(widget)} />
@@ -64,9 +64,9 @@ export default function Dashboard() {
         </div>
       )}
 
-      <div className="ui-row" style={{ marginBottom: '24px' }}>
+      <div style={{ display: 'flex', gap: '16px', marginBottom: '24px', flexWrap: 'wrap' }}>
         {selectedWidgets.includes('goals') && (
-          <div style={{ flex: 1 }}>
+          <div style={{ flex: 1, minWidth: '260px' }}>
             <div className="metric-card purple" style={{ minHeight: '180px' }}>
               <div className="metric-label">Meta de economia</div>
               <div className="metric-value" style={{ color: 'var(--c-purple)' }}>R$ 8.000</div>

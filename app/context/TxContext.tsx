@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { createTransaction, removeTransaction, updateTransactions } from "../application/transactions/transactionService";
-import { type Transaction, type TransactionDraft } from "../domain/transactions";
+import type { Transaction, TransactionDraft } from "../interfaces/transactions";
 import { loadTransactions, persistTransactions } from "../infrastructure/transactions/transactionRepository";
 
 type TxToast = { msg: string; type: "success" | "error" };
